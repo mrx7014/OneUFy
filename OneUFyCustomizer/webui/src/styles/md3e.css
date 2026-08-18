@@ -1,0 +1,143 @@
+/* Import these for KernelSU or WebUI-X provided css properties (as root variable) */
+@import url('https://mui.kernelsu.org/internal/insets.css'); /* For windows insets value */
+@import url('https://mui.kernelsu.org/internal/colors.css'); /* For app's monet color */
+
+/* Material 3 Expressive & Monet Color Token Definitions */
+
+:root {
+  /* Dynamic System Insets with fallbacks */
+  --safe-top: var(--window-inset-top, env(safe-area-inset-top, 0px));
+  --safe-bottom: var(--window-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --safe-left: var(--window-inset-left, env(safe-area-inset-left, 0px));
+  --safe-right: var(--window-inset-right, env(safe-area-inset-right, 0px));
+
+  /* Expressive Typography scale */
+  --font-family: 'Plus Jakarta Sans', 'Roboto Flex', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Expressive Shape Scale */
+  --shape-none: 0px;
+  --shape-xs: 6px;
+  --shape-sm: 10px;
+  --shape-md: 16px;
+  --shape-lg: 24px;
+  --shape-xl: 28px;
+  --shape-full: 9999px;
+
+  /* Motion & Spring Easing */
+  --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-easing-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --motion-duration-short: 150ms;
+  --motion-duration-medium: 300ms;
+  --motion-duration-long: 500ms;
+}
+
+/* Light Theme (Material 3 Expressive / Samsung OneUI Blue Hue) */
+[data-theme='light'] {
+  --md-sys-color-primary: #005ac1;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #d8e2ff;
+  --md-sys-color-on-primary-container: #001a41;
+
+  --md-sys-color-secondary: #575e71;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #dbe2f9;
+  --md-sys-color-on-secondary-container: #141b2c;
+
+  --md-sys-color-tertiary: #715573;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #fbd7fc;
+  --md-sys-color-on-tertiary-container: #29132d;
+
+  --md-sys-color-success: #198754;
+  --md-sys-color-success-container: #d1e7dd;
+  --md-sys-color-on-success-container: #0f5132;
+
+  --md-sys-color-warning: #b26a00;
+  --md-sys-color-warning-container: #ffe0b2;
+  --md-sys-color-on-warning-container: #4e2600;
+
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+
+  --md-sys-color-background: #f8f9fc;
+  --md-sys-color-on-background: #191c20;
+
+  --md-sys-color-surface: #f8f9fc;
+  --md-sys-color-on-surface: #191c20;
+  --md-sys-color-surface-variant: #e1e2ec;
+  --md-sys-color-on-surface-variant: #44474f;
+
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f2f3f7;
+  --md-sys-color-surface-container: #ecedf1;
+  --md-sys-color-surface-container-high: #e7e8eb;
+  --md-sys-color-surface-container-highest: #e1e2e6;
+
+  --md-sys-color-outline: #74777f;
+  --md-sys-color-outline-variant: #c4c6d0;
+
+  --card-shadow: 0 4px 16px -2px rgba(0, 20, 60, 0.05), 0 1px 4px -1px rgba(0, 0, 0, 0.04);
+  --header-glow: rgba(0, 90, 193, 0.12);
+}
+
+/* Dark Theme (Material 3 Expressive Deep AMOLED & Obsidian Slate) */
+[data-theme='dark'] {
+  --md-sys-color-primary: #adc6ff;
+  --md-sys-color-on-primary: #002e69;
+  --md-sys-color-primary-container: #004394;
+  --md-sys-color-on-primary-container: #d8e2ff;
+
+  --md-sys-color-secondary: #bfc6dc;
+  --md-sys-color-on-secondary: #293041;
+  --md-sys-color-secondary-container: #3f4759;
+  --md-sys-color-on-secondary-container: #dbe2f9;
+
+  --md-sys-color-tertiary: #debcdf;
+  --md-sys-color-on-tertiary: #402843;
+  --md-sys-color-tertiary-container: #583e5a;
+  --md-sys-color-on-tertiary-container: #fbd7fc;
+
+  --md-sys-color-success: #75db9e;
+  --md-sys-color-success-container: #0e4b2d;
+  --md-sys-color-on-success-container: #a6f5c5;
+
+  --md-sys-color-warning: #ffb951;
+  --md-sys-color-warning-container: #5c3000;
+  --md-sys-color-on-warning-container: #ffdcb4;
+
+  --md-sys-color-error: #ffb4ab;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000a;
+  --md-sys-color-on-error-container: #ffdad6;
+
+  --md-sys-color-background: #111318;
+  --md-sys-color-on-background: #e2e2e9;
+
+  --md-sys-color-surface: #111318;
+  --md-sys-color-on-surface: #e2e2e9;
+  --md-sys-color-surface-variant: #44474f;
+  --md-sys-color-on-surface-variant: #c4c6d0;
+
+  --md-sys-color-surface-container-lowest: #0c0e13;
+  --md-sys-color-surface-container-low: #191c20;
+  --md-sys-color-surface-container: #1e2025;
+  --md-sys-color-surface-container-high: #282a2f;
+  --md-sys-color-surface-container-highest: #33353a;
+
+  --md-sys-color-outline: #8e9099;
+  --md-sys-color-outline-variant: #44474f;
+
+  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
+  --header-glow: rgba(173, 198, 255, 0.15);
+}
+
+/* Monet Dynamic Overrides: When KernelSU / Android Monet injects custom CSS vars */
+[data-theme='monet'] {
+  --md-sys-color-primary: var(--android-color-accent-primary, #adc6ff);
+  --md-sys-color-primary-container: var(--android-color-accent-primary-container, #004394);
+  --md-sys-color-on-primary-container: var(--android-color-on-accent-primary-container, #d8e2ff);
+  --md-sys-color-surface-container: var(--android-color-surface-container, #1e2025);
+  --md-sys-color-surface-container-high: var(--android-color-surface-container-high, #282a2f);
+}

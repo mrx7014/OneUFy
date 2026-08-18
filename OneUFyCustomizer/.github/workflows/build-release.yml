@@ -1,0 +1,164 @@
+name: Build & Package OneUFy Module
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Publish as a GitHub Release?'
+        type: boolean
+        required: true
+        default: false
+      tag_name:
+        description: 'Release Tag (leave empty to use module.prop version)'
+        type: string
+        required: false
+        default: ''
+      release_title:
+        description: 'Custom Release Title (leave empty for default)'
+        type: string
+        required: false
+        default: ''
+      prerelease:
+        description: 'Mark as pre-release?'
+        type: boolean
+        required: false
+        default: false
+      draft:
+        description: 'Save as draft release?'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build WebUI & Package Zip
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: 'webui/package-lock.json'
+
+      - name: Install WebUI dependencies
+        run: |
+          cd webui
+          npm ci || npm install
+
+      - name: Build WebUI bundle
+        run: |
+          cd webui
+          npm run build
+
+      - name: Parse module metadata
+        id: metadata
+        run: |
+          PROP="module.prop"
+          if [ ! -f "$PROP" ]; then
+            echo "Error: module.prop not found" >&2
+            exit 1
+          fi
+          
+          MOD_ID=$(grep -E '^id=' "$PROP" | cut -d'=' -f2 | tr -d '\r\n')
+          MOD_VER=$(grep -E '^version=' "$PROP" | cut -d'=' -f2 | tr -d '\r\n')
+          MOD_CODE=$(grep -E '^versionCode=' "$PROP" | cut -d'=' -f2 | tr -d '\r\n')
+          MOD_NAME=$(grep -E '^name=' "$PROP" | cut -d'=' -f2 | tr -d '\r\n')
+          
+          # Determine release tag
+          CUSTOM_TAG="${{ github.event.inputs.tag_name }}"
+          if [ -n "$CUSTOM_TAG" ]; then
+            TAG="$CUSTOM_TAG"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG="$MOD_VER"
+          fi
+          
+          # Clean tag for filename
+          FILE_VER=$(echo "$TAG" | sed 's/^v//')
+          ZIP_NAME="${MOD_ID}-v${FILE_VER}.zip"
+          
+          echo "mod_id=$MOD_ID" >> $GITHUB_OUTPUT
+          echo "mod_ver=$MOD_VER" >> $GITHUB_OUTPUT
+          echo "mod_code=$MOD_CODE" >> $GITHUB_OUTPUT
+          echo "mod_name=$MOD_NAME" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+
+      - name: Package flashable Magisk/KernelSU module
+        run: |
+          # Ensure execution permission on install script
+          chmod 755 customize.sh
+          
+          # Run standalone packager (automatically ignores logo, git, node_modules)
+          node packageModule.cjs
+          
+          ZIP_NAME="${{ steps.metadata.outputs.zip_name }}"
+          if [ ! -f "$ZIP_NAME" ]; then
+            ACTUAL_ZIP=$(ls OneUFy-*.zip | grep -v '\-src' | head -n 1)
+            if [ -n "$ACTUAL_ZIP" ] && [ "$ACTUAL_ZIP" != "$ZIP_NAME" ]; then
+              cp "$ACTUAL_ZIP" "$ZIP_NAME"
+              cp "${ACTUAL_ZIP}.sha256" "${ZIP_NAME}.sha256"
+            fi
+          fi
+          
+          echo "=== Module Packaged Successfully ==="
+          ls -lh "$ZIP_NAME"
+          cat "${ZIP_NAME}.sha256"
+
+      - name: Upload module artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.metadata.outputs.zip_name }}
+          path: |
+            ${{ steps.metadata.outputs.zip_name }}
+            ${{ steps.metadata.outputs.zip_name }}.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Determine if release should be published
+        id: should_release
+        run: |
+          IS_TAG="${{ startsWith(github.ref, 'refs/tags/v') }}"
+          MANUAL_RELEASE="${{ github.event.inputs.release }}"
+          
+          if [ "$IS_TAG" = "true" ] || [ "$MANUAL_RELEASE" = "true" ]; then
+            echo "publish=true" >> $GITHUB_OUTPUT
+          else
+            echo "publish=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish GitHub Release
+        if: steps.should_release.outputs.publish == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.metadata.outputs.tag }}
+          name: ${{ github.event.inputs.release_title || format('{0} {1}', steps.metadata.outputs.mod_name, steps.metadata.outputs.tag) }}
+          draft: ${{ github.event.inputs.draft || false }}
+          prerelease: ${{ github.event.inputs.prerelease || false }}
+          generate_release_notes: true
+          files: |
+            ${{ steps.metadata.outputs.zip_name }}
+            ${{ steps.metadata.outputs.zip_name }}.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
